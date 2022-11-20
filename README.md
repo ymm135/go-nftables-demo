@@ -292,6 +292,255 @@ func main() {
 ```
 
 
+更复杂的规则
+```shell
+table ip netvine-table {
+        chain base-rule-chain {
+                type filter hook forward priority filter; policy accept;
+                iifname "enp2s0" oifname { "enp4s0", "enp5s0" } ip saddr 192.168.0.1 ip daddr { 192.168.0.1, 192.168.1.1-192.168.1.100, 192.168.2.0/24 } meta iiftype ether ether daddr 32:c8:06:2f:51:66 ether saddr 32:c8:06:2f:51:5f tcp sport 20 tcp dport 30 meta time { "2022-11-01 18:00:00"-"2022-11-01 19:00:00", "2022-11-10 18:00:00"-"2022-11-10 19:00:00" } meta day {1,2,3} meta hour { "16:00:00"-"18:00:00","20:00:00"-"21:00:00" } log prefix "test-log1" queue
+        }
+}
+```
+
+json数据
+```json
+{
+    "nftables":[
+        {
+            "metainfo":{
+                "version":"0.9.3",
+                "release_name":"Topsy",
+                "json_schema_version":1
+            }
+        },
+        {
+            "table":{
+                "family":"ip",
+                "name":"netvine-table",
+                "handle":13
+            }
+        },
+        {
+            "chain":{
+                "family":"ip",
+                "table":"netvine-table",
+                "name":"base-rule-chain",
+                "handle":1,
+                "type":"filter",
+                "hook":"forward",
+                "prio":0,
+                "policy":"accept"
+            }
+        },
+        {
+            "rule":{
+                "family":"ip",
+                "table":"netvine-table",
+                "chain":"base-rule-chain",
+                "handle":7,
+                "expr":[
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "meta":{
+                                    "key":"iifname"
+                                }
+                            },
+                            "right":"enp2s0"
+                        }
+                    },
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "meta":{
+                                    "key":"oifname"
+                                }
+                            },
+                            "right":{
+                                "set":[
+                                    "enp4s0",
+                                    "enp5s0"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "payload":{
+                                    "protocol":"ip",
+                                    "field":"saddr"
+                                }
+                            },
+                            "right":"192.168.0.1"
+                        }
+                    },
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "payload":{
+                                    "protocol":"ip",
+                                    "field":"daddr"
+                                }
+                            },
+                            "right":{
+                                "set":[
+                                    "192.168.0.1",
+                                    {
+                                        "range":[
+                                            "192.168.1.1",
+                                            "192.168.1.100"
+                                        ]
+                                    },
+                                    {
+                                        "prefix":{
+                                            "addr":"192.168.2.0",
+                                            "len":24
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "payload":{
+                                    "protocol":"ether",
+                                    "field":"daddr"
+                                }
+                            },
+                            "right":"32:c8:06:2f:51:66"
+                        }
+                    },
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "payload":{
+                                    "protocol":"ether",
+                                    "field":"saddr"
+                                }
+                            },
+                            "right":"32:c8:06:2f:51:5f"
+                        }
+                    },
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "payload":{
+                                    "protocol":"tcp",
+                                    "field":"sport"
+                                }
+                            },
+                            "right":20
+                        }
+                    },
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "payload":{
+                                    "protocol":"tcp",
+                                    "field":"dport"
+                                }
+                            },
+                            "right":30
+                        }
+                    },
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "meta":{
+                                    "key":"time"
+                                }
+                            },
+                            "right":{
+                                "set":[
+                                    {
+                                        "range":[
+                                            "2022-11-01 18:00:00",
+                                            "2022-11-01 19:00:00"
+                                        ]
+                                    },
+                                    {
+                                        "range":[
+                                            "2022-11-10 18:00:00",
+                                            "2022-11-10 19:00:00"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "meta":{
+                                    "key":"day"
+                                }
+                            },
+                            "right":{
+                                "set":[
+                                    "Monday",
+                                    "Tuesday",
+                                    "Wednesday"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "match":{
+                            "op":"==",
+                            "left":{
+                                "meta":{
+                                    "key":"hour"
+                                }
+                            },
+                            "right":{
+                                "set":[
+                                    {
+                                        "range":[
+                                            "16:00",
+                                            "18:00"
+                                        ]
+                                    },
+                                    {
+                                        "range":[
+                                            "20:00",
+                                            "21:00"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "log":{
+                            "prefix":"test-log1"
+                        }
+                    },
+                    {
+                        "queue":{
+                            "num":0
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+
+
 
 
 
