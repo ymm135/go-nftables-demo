@@ -152,6 +152,18 @@ func main() {
 apt install libnftables-dev
 ```
 
+> nft编译选项
+```
+nft configuration:
+  cli support:			readline
+  enable debugging symbols:	yes
+  use mini-gmp:			no
+  enable man page:              yes
+  libxtables support:		no
+  json output support:          no
+  enable Python:		yes (with /usr/bin/python2)
+```
+
 go会把参数封装成`JSON`传给`libnft`  
 
 比如规则文件是
