@@ -164,6 +164,8 @@ nft configuration:
   enable Python:		yes (with /usr/bin/python2)
 ```
 
+> ./configure --with-json 
+
 go会把参数封装成`JSON`传给`libnft`  
 
 比如规则文件是
